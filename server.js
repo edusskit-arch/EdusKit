@@ -57,5 +57,59 @@ app.post('/api/ai', async (req, res) => {
   return res.json({ reply });
 });
 
+// Simple dictionary proxy using Wiktionary extracts per language
+const fs = require('fs');
+const path = require('path');
+const cache = new Map();
+app.get('/api/dict', async (req, res) => {
+  const { lang = 'en', word } = req.query;
+  if(!word) return res.status(400).json({ error: 'word required' });
+  const key = `${lang}:${word.toLowerCase()}`;
+  if(cache.has(key)) return res.json({ word, extract: cache.get(key) });
+  try{
+    const host = `${lang}.wiktionary.org`;
+    const url = `https://${host}/w/api.php?action=query&prop=extracts&format=json&explaintext=1&redirects=1&titles=${encodeURIComponent(word)}`;
+    const r = await fetch(url);
+    const j = await r.json();
+    const pages = j.query && j.query.pages;
+    const firstKey = pages && Object.keys(pages)[0];
+    let extract = '';
+    if(firstKey && pages[firstKey].extract){
+      extract = pages[firstKey].extract.split('\n').slice(0,6).join('\n');
+    }
+    if(!extract) extract = 'No se encontró definición en Wiktionary.';
+    cache.set(key, extract);
+    return res.json({ word, extract });
+  }catch(err){
+    console.error('dict error', err);
+    return res.status(500).json({ error: 'dictionary lookup failed' });
+  }
+});
+
+// Sync endpoints: save/load progress to a data folder (very simple, no auth)
+const DATA_DIR = path.join(__dirname, 'data');
+if(!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+
+app.post('/api/sync/save', (req, res)=>{
+  const { id, progress } = req.body || {};
+  if(!id || !progress) return res.status(400).json({ error: 'id and progress required' });
+  const file = path.join(DATA_DIR, `${id}.json`);
+  try{
+    fs.writeFileSync(file, JSON.stringify({ progress, savedAt: new Date().toISOString() }, null, 2));
+    return res.json({ ok: true, id });
+  }catch(e){ console.error(e); return res.status(500).json({ error: 'save failed' }); }
+});
+
+app.get('/api/sync/load', (req, res)=>{
+  const id = req.query.id;
+  if(!id) return res.status(400).json({ error: 'id required' });
+  const file = path.join(DATA_DIR, `${id}.json`);
+  if(!fs.existsSync(file)) return res.status(404).json({ error: 'not found' });
+  try{
+    const content = JSON.parse(fs.readFileSync(file,'utf8'));
+    return res.json(content);
+  }catch(e){ console.error(e); return res.status(500).json({ error: 'load failed' }); }
+});
+
 const port = process.env.PORT || 8080;
 app.listen(port, ()=> console.log(`Server running on http://0.0.0.0:${port} — IA: ${AI_NAME}`));

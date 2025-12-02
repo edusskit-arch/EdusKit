@@ -528,3 +528,64 @@ function handlePracticeAnswer(lang, chosen, correct){
   setTimeout(()=> renderPractice(lang), 900);
 }
 
+/* ===== Dictionary UI integration (server) ===== */
+function openDictionary(langCode, word){
+  // call server /api/dict
+  fetch(`/api/dict?lang=${langCode}&word=${encodeURIComponent(word)}`)
+    .then(r=>r.json())
+    .then(j=>{
+      const modal = document.createElement('div');
+      modal.className='dict-modal';
+      modal.innerHTML = `<div class="dict-box"><h3>${j.word}</h3><pre style="white-space:pre-wrap">${j.extract}</pre><div class="dict-actions"><button id="dictTTS">🔊 Pronunciar</button> <button id="dictClose">Cerrar</button></div></div>`;
+      document.body.appendChild(modal);
+      document.getElementById('dictClose').onclick = ()=> modal.remove();
+      document.getElementById('dictTTS').onclick = ()=> speak(j.extract.split('\n')[0]||j.word, langCode);
+    }).catch(e=>{ alert('Dictionary lookup failed'); console.error(e); });
+}
+
+/* ===== Sync UI: export/import + server save/load ===== */
+function exportProgress(){
+  const p = localStorage.getItem('eduskit_lang_progress') || '{}';
+  const blob = new Blob([p], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'eduskit_progress.json'; a.click(); URL.revokeObjectURL(url);
+}
+
+function importProgress(file){
+  const reader = new FileReader();
+  reader.onload = ()=>{ try{ const j=JSON.parse(reader.result); localStorage.setItem('eduskit_lang_progress', JSON.stringify(j)); alert('Progreso importado'); }catch(e){ alert('JSON inválido'); } };
+  reader.readAsText(file);
+}
+
+async function saveToServer(id){
+  const prog = getProgress();
+  const body = { id: id || generateId(), progress: prog };
+  const res = await fetch('/api/sync/save', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const j = await res.json();
+  if(j.ok) { navigator.clipboard.writeText(j.id).catch(()=>{}); alert('Guardado. ID copiada al portapapeles: ' + j.id); }
+  else alert('Save failed');
+}
+
+async function loadFromServer(id){
+  if(!id) return alert('ID requerida');
+  const res = await fetch('/api/sync/load?id=' + encodeURIComponent(id));
+  if(res.status!==200){ alert('No encontrado'); return; }
+  const j = await res.json();
+  if(j && j.progress){ localStorage.setItem('eduskit_lang_progress', JSON.stringify(j.progress)); alert('Progreso cargado'); location.reload(); }
+}
+
+function generateId(){ return 'edus-' + Math.random().toString(36).slice(2,9); }
+
+// expose some buttons in header
+function initSyncUI(){
+  const header = document.querySelector('.header-controls');
+  if(!header) return;
+  const exp = document.createElement('button'); exp.textContent='Exportar progreso'; exp.onclick = exportProgress; header.appendChild(exp);
+  const imp = document.createElement('input'); imp.type='file'; imp.style.display='none'; imp.onchange = (e)=> importProgress(e.target.files[0]); header.appendChild(imp);
+  const impBtn = document.createElement('button'); impBtn.textContent='Importar progreso'; impBtn.onclick = ()=> imp.click(); header.appendChild(impBtn);
+  const saveBtn = document.createElement('button'); saveBtn.textContent='Guardar en servidor'; saveBtn.onclick = ()=>{ const id = prompt('Usa ID (vacío para nuevo):'); saveToServer(id); }; header.appendChild(saveBtn);
+  const loadBtn = document.createElement('button'); loadBtn.textContent='Cargar desde servidor'; loadBtn.onclick = ()=>{ const id = prompt('ID para cargar:'); loadFromServer(id); }; header.appendChild(loadBtn);
+}
+
+initSyncUI();
+
