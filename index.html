@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EdusKit Beta (Offline)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>EdusKit Beta</h1>
+    <small>Prototipo educativo offline para liceos públicos</small>
+  </header>
+
+  <main>
+    <nav class="tabs" id="tabs"></nav>
+
+    <!-- Inicio -->
+    <section class="panel active" data-tab="Inicio">
+      <h2>Información de uso</h2>
+      <p>EdusKit es una aplicación educativa modular diseñada para funcionar sin conexión a internet en equipos con sistemas Windows, Linux y Android. Su propósito es apoyar a estudiantes y docentes en materias troncales como Matemáticas, Química, Física e Idiomas.</p>
+
+      <h2>¿Por qué se hizo?</h2>
+      <p>Esta aplicación surge como respuesta a la falta de recursos digitales en liceos públicos venezolanos, donde la ausencia de conectividad y equipos modernos limita el aprendizaje. EdusKit busca cerrar esa brecha ofreciendo una herramienta offline que fortalezca el rendimiento académico.</p>
+
+      <h2>¿Cómo ayudará?</h2>
+      <p>EdusKit permitirá que cualquier estudiante, independientemente de sus condiciones de acceso a internet, pueda reforzar contenidos clave de manera autónoma. Asimismo, brindará a los docentes un apoyo práctico para la enseñanza y evaluación.</p>
+
+      <h2>Autores</h2>
+      <ul class="authors">
+        <li>Raga, Endy (2025). <i>EdusKit Beta: Aplicación educativa offline.</i></li>
+        <li>Guasimucaro, Yanetzy (2025). <i>EdusKit Beta: Aplicación educativa offline.</i></li>
+        <li>García, David (2025). <i>EdusKit Beta: Aplicación educativa offline.</i></li>
+        <li>Hidalgo, Melianny (2025). <i>EdusKit Beta: Aplicación educativa offline.</i></li>
+      </ul>
+
+      <h2>Proceso de creación</h2>
+      <div class="gallery">
+        <div class="image-placeholder">Añade aquí tus imágenes del proceso de diseño y desarrollo</div>
+      </div>
+    </section>
+
+    <!-- Matemáticas -->
+    <section class="panel" data-tab="Matemáticas">
+      <h2>Práctica rápida</h2>
+      <div id="mathProblem" class="mono">—</div>
+      <div class="row">
+        <input id="mathAnswer" type="number" placeholder="Tu respuesta"/>
+        <button id="mathCheck">Comprobar</button>
+        <button id="mathNext">Siguiente</button>
+      </div>
+      <p id="mathFeedback"></p>
+    </section>
+
+    <!-- Química -->
+    <section class="panel" data-tab="Química">
+      <h2>Tabla periódica mini</h2>
+      <div id="elements" class="row"></div>
+
+      <h2>Calculadora de masa molar</h2>
+      <div class="row">
+        <input id="chemFormula" placeholder="Ej.: H2O, CO2, CaCl2"/>
+        <button id="chemCalc">Calcular</button>
+      </div>
+      <p id="chemResult" class="mono"></p>
+      <p class="tiny muted">Soporta fórmulas simples con subíndices numéricos (sin paréntesis ni puntos decimales).</p>
+    </section>
+
+    <!-- Física -->
+    <section class="panel" data-tab="Física">
+      <h2>Velocidad media</h2>
+      <div class="row">
+        <input id="dist" type="number" placeholder="Distancia (m)"/>
+        <input id="time" type="number" placeholder="Tiempo (s)"/>
+        <button id="velCalc">Calcular</button>
+      </div>
+      <p id="velResult" class="mono"></p>
+
+      <h2>Ley de Ohm</h2>
+      <div class="row">
+        <input id="ohmV" type="number" placeholder="Voltaje V (voltios)"/>
+        <input id="ohmR" type="number" placeholder="Resistencia R (ohmios)"/>
+        <button id="ohmCalc">Calcular I</button>
+      </div>
+      <p id="ohmResult" class="mono"></p>
+    </section>
+
+    <!-- Idiomas -->
+    <section class="panel" data-tab="Idiomas">
+      <h2>Vocabulario (EN–ES–FR–TH–JP)</h2>
+      <div id="langCard" class="mono center" style="font-size:1.3rem;">—</div>
+      <div class="row">
+        <button id="langShow">Mostrar traducción</button>
+        <button id="langNext">Siguiente</button>
+      </div>
+      <p id="langAnswer" class="center tiny"></p>
+
+      <h2>Lista completa</h2>
+      <ul id="langList" class="list"></ul>
+    </section>
+  </main>
+
+  <!-- Asistente IA -->
+  <aside class="assistant" id="assistant">
+    <h2>Asistente: <span id="ai-name">EdusBot</span></h2>
+    <div id="chat" class="chat"></div>
+    <div class="chat-row">
+      <input id="chatInput" placeholder="Escribe una pregunta para la IA..." />
+      <button id="chatSend">Enviar</button>
+    </div>
+    <p class="tiny muted">La IA en modo local responde con texto de ejemplo. Puedes configurar una API real en el servidor (OPENAI_API_KEY).</p>
+  </aside>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+/* Base */
+body {
+  font-family: system-ui, sans-serif;
+  background:#0f172a;
+  color:#e5e7eb;
+  margin:0;
+}
+header {
+  padding:20px;
+  background:#111827;
+  border-bottom:1px solid #1f2937;
+}
+header h1 { margin:0; font-size:1.5rem; }
+header small { color:#4c9fd6; }
+main { max-width:1100px; margin:20px auto; padding:0 16px; }
+
+/* Tabs y paneles */
+nav.tabs { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+.tab-btn {
+  padding:10px 14px;
+  border-radius:8px;
+  border:1px solid #334155;
+  background:#1f2937;
+  color:#cbd5e1;
+  cursor:pointer;
+}
+.tab-btn.active { background:#0f172a; border-color:#60a5fa; color:#fff; }
+section.panel { display:none; background:#1f2937; border-radius:12px; padding:20px; margin-bottom:20px; }
+section.panel.active { display:block; }
+
+h2 { color:#60a5fa; margin-top:0; }
+p { line-height:1.5; }
+.tiny { font-size:0.9rem; }
+.muted { color:#94a3b8; }
+
+/* Listas y galería */
+.authors li { margin-bottom:6px; }
+.list { display:grid; gap:8px; }
+.list li { border:1px dashed #334155; padding:8px; border-radius:8px; }
+.gallery { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; }
+.gallery img { width:100%; border-radius:12px; border:2px solid #334155; }
+.image-placeholder {
+  border:2px dashed #334155;
+  padding:30px;
+  text-align:center;
+  border-radius:12px;
+  color:#94a3b8;
+}
+
+/* Utilidades */
+.mono { font-family: monospace; }
+.center { text-align: center; }
+.row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+input, button {
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #334155;
+  background:#0f172a;
+  color:#e5e7eb;
+}
+button { cursor:pointer; }
+
+/* Estilos del asistente */
+.assistant { max-width:1100px; margin:10px auto 60px; background:#0b1220; border-radius:10px; padding:16px; border:1px solid #1f2937; }
+.assistant h2 { margin:0 0 8px 0; color:#7dd3fc }
+.chat { max-height:220px; overflow:auto; background:#071025; padding:10px; border-radius:8px; border:1px solid #0f172a; }
+.chat-msg { margin:8px 0; padding:8px; border-radius:8px; }
+.chat-msg.user { background:#05202a; text-align:right; }
+.chat-msg.ai { background:#07202a; }
+.chat-row { display:flex; gap:8px; margin-top:8px; }
+.chat-row input { flex:1; }
+
