@@ -70,3 +70,20 @@ button { cursor:pointer; }
 .chat-row { display:flex; gap:8px; margin-top:8px; }
 .chat-row input { flex:1; }
 
+/* Language modules */
+.lang-modules { display:flex; gap:12px; flex-wrap:wrap; }
+.lang-card { background:#071428; padding:12px; border-radius:10px; border:1px solid #0f172a; width:180px; }
+.lang-card h3 { margin:0 0 6px 0; }
+.lang-actions { margin-top:8px }
+.lang-actions button { padding:8px 10px }
+.lang-module { background:#071428; padding:12px; border-radius:10px; border:1px solid #0f172a; }
+.module-head { display:flex; justify-content:space-between; align-items:center }
+.module-stats { display:flex; gap:12px; font-size:0.95rem }
+.lesson-list { display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:8px }
+.lesson-item { background:#071825; padding:8px; border-radius:8px; border:1px solid #0f172a }
+.module-tabs { display:flex; gap:8px }
+.practice-opts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px }
+.opt-btn { padding:8px 12px; border-radius:8px }
+.speed-game { border-top:1px solid #0f172a; padding-top:8px }
+
+

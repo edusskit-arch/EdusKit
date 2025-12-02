@@ -152,6 +152,167 @@ CARDS.forEach(([en, es, fr, th, jp])=>{
   langList.appendChild(li);
 });
 
+/* ====== Language modules (Duolingo-like minimal) ====== */
+const LANGS = [
+  { code: 'es', name: 'Español', idx: 1 },
+  { code: 'fr', name: 'Français', idx: 2 },
+  { code: 'th', name: 'ไทย', idx: 3 },
+  { code: 'jp', name: '日本語', idx: 4 }
+];
+
+function getProgress(){
+  try{ return JSON.parse(localStorage.getItem('eduskit_lang_progress')||'{}'); }catch(e){ return {}; }
+}
+function saveProgress(p){ localStorage.setItem('eduskit_lang_progress', JSON.stringify(p)); }
+
+function renderLangModules(){
+  const container = document.getElementById('langModules');
+  container.innerHTML='';
+  LANGS.forEach(l=>{
+    const card = document.createElement('div');
+    card.className = 'lang-card';
+    card.innerHTML = `<h3>${l.name}</h3><p class="tiny muted">Módulo: ${l.name}</p><div class="lang-actions"><button data-code="${l.code}">Abrir módulo</button></div>`;
+    card.querySelector('button').onclick = ()=> openLangModule(l);
+    container.appendChild(card);
+  });
+}
+
+function openLangModule(lang){
+  const area = document.getElementById('langModuleArea');
+  const prog = getProgress();
+  const state = prog[lang.code] || { xp:0, streak:0 };
+
+  area.innerHTML = `
+    <div class="lang-module">
+      <header class="module-head">
+        <h2>${lang.name}</h2>
+        <div class="module-stats">
+          <div>XP: <span id="lm-xp">${state.xp}</span></div>
+          <div>Racha: <span id="lm-streak">${state.streak}</span></div>
+          <div>Nivel: <span id="lm-level">${Math.floor(state.xp/100)}</span></div>
+        </div>
+      </header>
+      <section class="module-body">
+        <div class="module-tabs">
+          <button id="lm-lesson">Lección (Vocabulario)</button>
+          <button id="lm-practice">Práctica (Multiple choice)</button>
+          <button id="lm-game">Minijuego (Velocidad)</button>
+        </div>
+        <div id="lm-area" style="margin-top:12px"></div>
+      </section>
+    </div>`;
+
+  // attach handlers
+  document.getElementById('lm-lesson').onclick = ()=> renderLesson(lang);
+  document.getElementById('lm-practice').onclick = ()=> renderPractice(lang);
+  document.getElementById('lm-game').onclick = ()=> renderSpeedGame(lang);
+  renderLesson(lang);
+}
+
+function renderLesson(lang){
+  const area = document.getElementById('lm-area');
+  area.innerHTML = '<h3>Lección: Vocabulario básico</h3>';
+  const list = document.createElement('div');
+  list.className='lesson-list';
+  CARDS.forEach(([en, es, fr, th, jp])=>{
+    const trans = [es, fr, th, jp][LANGS.findIndex(l=>l.code===lang.code)];
+    const item = document.createElement('div');
+    item.className='lesson-item';
+    item.innerHTML = `<b>${en}</b> — <span>${trans}</span>`;
+    list.appendChild(item);
+  });
+  area.appendChild(list);
+}
+
+function pickOptions(correct, lang){
+  const options = new Set([correct]);
+  while(options.size < 4){
+    const r = CARDS[Math.floor(Math.random()*CARDS.length)];
+    const candidate = r[LANGS.findIndex(l=>l.code===lang.code)+1];
+    options.add(candidate);
+  }
+  return shuffle(Array.from(options));
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a }
+
+function renderPractice(lang){
+  const area = document.getElementById('lm-area');
+  area.innerHTML = '<h3>Práctica: selecciona la traducción correcta</h3>';
+  const idx = Math.floor(Math.random()*CARDS.length);
+  const [en, es, fr, th, jp] = CARDS[idx];
+  const correct = [es, fr, th, jp][LANGS.findIndex(l=>l.code===lang.code)];
+  const opts = pickOptions(correct, lang);
+  const q = document.createElement('div'); q.className='practice-q';
+  q.innerHTML = `<div class="mono" style="font-size:1.4rem;">${en}</div>`;
+  const buttons = document.createElement('div'); buttons.className='practice-opts';
+  opts.forEach(opt=>{
+    const b=document.createElement('button'); b.className='opt-btn'; b.textContent=opt;
+    b.onclick = ()=> handlePracticeAnswer(lang, opt, correct);
+    buttons.appendChild(b);
+  });
+  area.appendChild(q); area.appendChild(buttons);
+}
+
+function handlePracticeAnswer(lang, chosen, correct){
+  const prog = getProgress();
+  prog[lang.code] = prog[lang.code] || { xp:0, streak:0 };
+  const state = prog[lang.code];
+  if(chosen === correct){
+    // award xp
+    state.xp += 10;
+    state.streak += 1;
+    appendMessage('ai', `¡Correcto! +10 XP. Racha: ${state.streak}`);
+  } else {
+    state.streak = 0;
+    appendMessage('ai', `Incorrecto. La respuesta correcta era: ${correct}`);
+  }
+  saveProgress(prog);
+  // update stats in UI if open
+  const xpEl = document.getElementById('lm-xp'); if(xpEl) xpEl.textContent = state.xp;
+  const streakEl = document.getElementById('lm-streak'); if(streakEl) streakEl.textContent = state.streak;
+  const levelEl = document.getElementById('lm-level'); if(levelEl) levelEl.textContent = Math.floor(state.xp/100);
+  // next question after short delay
+  setTimeout(()=> renderPractice(lang), 900);
+}
+
+function renderSpeedGame(lang){
+  const area = document.getElementById('lm-area');
+  area.innerHTML = '<h3>Minijuego: responde rápido (10 preguntas)</h3>';
+  const board = document.createElement('div'); board.className='speed-game';
+  const info = document.createElement('div'); info.className='speed-info';
+  info.innerHTML = '<div>Preguntas contestadas: <span id="sg-count">0</span>/10</div><div>Puntos: <span id="sg-points">0</span></div>';
+  board.appendChild(info);
+  const qarea = document.createElement('div'); qarea.id='sg-q'; board.appendChild(qarea);
+  area.appendChild(board);
+  startSpeedRound(lang, 0, 0);
+}
+
+function startSpeedRound(lang, count, points){
+  if(count >= 10){ appendMessage('ai', `Juego terminado. Puntos: ${points}`); return; }
+  const [en, es, fr, th, jp] = CARDS[Math.floor(Math.random()*CARDS.length)];
+  const correct = [es, fr, th, jp][LANGS.findIndex(l=>l.code===lang.code)];
+  const opts = pickOptions(correct, lang);
+  const qarea = document.getElementById('sg-q'); qarea.innerHTML = `<div class="mono">${en}</div>`;
+  const optsDiv = document.createElement('div'); optsDiv.className='practice-opts';
+  opts.forEach(opt=>{
+    const b = document.createElement('button'); b.textContent=opt; b.className='opt-btn';
+    b.onclick = ()=>{
+      if(opt===correct) points+=5; else points-=1;
+      document.getElementById('sg-count').textContent = count+1;
+      document.getElementById('sg-points').textContent = points;
+      // small delay then next
+      setTimeout(()=> startSpeedRound(lang, count+1, points), 400);
+    };
+    optsDiv.appendChild(b);
+  });
+  qarea.appendChild(optsDiv);
+}
+
+// render modules at start
+renderLangModules();
+
+
 // ----- Asistente IA (Chat) -----
 const AI_NAME = "EdusBot"; // nombre propio ligado a la app
 document.getElementById('ai-name').textContent = AI_NAME;
