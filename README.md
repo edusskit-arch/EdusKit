@@ -115,3 +115,14 @@ Pruebas automáticas y CI
 
 - Se añadió un test sencillo en `tests/ai.test.js` que hace POST a `/api/ai` y verifica que la respuesta contiene un campo `reply`.
 - Se añadió un workflow de GitHub Actions en `.github/workflows/ci.yml` que instala dependencias, arranca el servidor y ejecuta `npm test` en pushes/pull requests a `main`.
+ 
+### Nuevas características avanzadas
+
+- Interfaz traducible: selector de idioma de la interfaz (Español, English, Français, ไทย, 日本語).
+- Mascota representativa (en el header) que reacciona cuando aciertas o fallas en ejercicios.
+- Diccionarios básicos para cada idioma (consulta palabra → traducción + definición simple) accesibles desde las lecciones.
+- Pronunciación: Text-to-Speech (Web Speech API) para escuchar palabras o traducciones.
+- Módulos de idiomas con lecciones estructuradas por unidades, práctica tipo Duolingo (multiple choice) y minijuego de velocidad.
+- Progreso guardado en `localStorage` (XP, racha, último acceso) y racha diaria básica.
+
+Ver las secciones relevantes en la UI (pestaña Idiomas) para usar estas funciones.

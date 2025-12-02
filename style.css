@@ -10,6 +10,10 @@ header {
   background:#111827;
   border-bottom:1px solid #1f2937;
 }
+.header-row{display:flex;justify-content:space-between;align-items:center}
+.header-controls{display:flex;gap:12px;align-items:center}
+.header-controls select{padding:6px;border-radius:6px}
+.mascot{font-size:1.8rem;padding:6px;border-radius:8px;background:#0b1220;border:1px solid #203040;cursor:default}
 header h1 { margin:0; font-size:1.5rem; }
 header small { color:#4c9fd6; }
 main { max-width:1100px; margin:20px auto; padding:0 16px; }
@@ -85,5 +89,11 @@ button { cursor:pointer; }
 .practice-opts { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px }
 .opt-btn { padding:8px 12px; border-radius:8px }
 .speed-game { border-top:1px solid #0f172a; padding-top:8px }
+
+/* Dictionary modal */
+.dict-modal{position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center}
+.dict-box{background:#071428;padding:18px;border-radius:10px;border:1px solid #0f172a;max-width:520px;color:#e6eef6}
+.dict-box h3{margin-top:0}
+.dict-actions{display:flex;gap:8px;margin-top:12px}
 
 

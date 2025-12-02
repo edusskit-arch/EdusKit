@@ -405,3 +405,126 @@ copyBtn.onclick = ()=>{
     appendMessage('ai', 'Conversación copiada al portapapeles.');
   }catch(e){ appendMessage('ai', 'No se pudo copiar.'); console.error(e); }
 };
+
+/* ===== UI language (i18n) ===== */
+const UI_STRINGS = {
+  en: {
+    title: 'EdusKit Beta',
+    subtitle: 'Offline educational prototype for public schools',
+    assistantWelcome: `Hi — I'm ${AI_NAME}. How can I help?`,
+    clearHistory: 'Clear history',
+    copyHistory: 'Copy conversation'
+  },
+  es: {
+    title: 'EdusKit Beta',
+    subtitle: 'Prototipo educativo offline para liceos públicos',
+    assistantWelcome: `Hola — soy ${AI_NAME}. ¿En qué te ayudo hoy?`,
+    clearHistory: 'Borrar historial',
+    copyHistory: 'Copiar conversación'
+  },
+  fr: { title:'EdusKit Beta', subtitle:'Prototype éducatif offline', assistantWelcome:`Bonjour — je suis ${AI_NAME}.`, clearHistory:'Effacer historique', copyHistory:'Copier conversation' },
+  th: { title:'EdusKit Beta', subtitle:'ต้นแบบการศึกษาออฟไลน์', assistantWelcome:`สวัสดี — ฉันคือ ${AI_NAME}`, clearHistory:'ล้างประวัติ', copyHistory:'คัดลอกบทสนทนา' },
+  jp: { title:'EdusKit Beta', subtitle:'オフライン教育プロトタイプ', assistantWelcome:`こんにちは — 私は${AI_NAME}です。`, clearHistory:'履歴を消す', copyHistory:'会話をコピー' }
+};
+
+function setUILanguage(code){
+  const s = UI_STRINGS[code] || UI_STRINGS.es;
+  document.getElementById('title').textContent = s.title;
+  document.getElementById('subtitle').textContent = s.subtitle;
+  // assistant welcome message update (append new)
+  appendMessage('ai', s.assistantWelcome);
+  // buttons text
+  document.getElementById('clearHistory').textContent = s.clearHistory;
+  document.getElementById('copyHistory').textContent = s.copyHistory;
+}
+
+// wire UI lang selector
+const uiLangSel = document.getElementById('uiLang');
+uiLangSel.value = 'es';
+uiLangSel.addEventListener('change', (e)=> setUILanguage(e.target.value));
+
+// set initial language
+setUILanguage('es');
+
+/* ===== Mascot logic ===== */
+const mascotEl = document.getElementById('mascot');
+function mascotReact(type){
+  // type: 'happy'|'sad'|'think'
+  if(!mascotEl) return;
+  const orig = '🦉';
+  if(type==='happy') mascotEl.textContent='😄';
+  else if(type==='sad') mascotEl.textContent='😕';
+  else mascotEl.textContent='🤔';
+  setTimeout(()=> mascotEl.textContent = orig, 1200);
+}
+
+// use mascot reactions on answers
+const oldHandlePracticeAnswer = handlePracticeAnswer;
+function handlePracticeAnswer(lang, chosen, correct){
+  // call original logic (we will inline the logic here because old function is defined below in file order)
+}
+
+/* ===== Dictionaries data and TTS ===== */
+const DICTIONARIES = {
+  es: {}, fr:{}, th:{}, jp:{}
+};
+
+// populate dictionaries from CARDS (basic definitions)
+CARDS.forEach(([en, es, fr, th, jp])=>{
+  DICTIONARIES.es[en.toLowerCase()] = { word: en, translation: es, def: `Traducción al español: ${es}` };
+  DICTIONARIES.fr[en.toLowerCase()] = { word: en, translation: fr, def: `Traduction en français: ${fr}` };
+  DICTIONARIES.th[en.toLowerCase()] = { word: en, translation: th, def: `คำแปลภาษาไทย: ${th}` };
+  DICTIONARIES.jp[en.toLowerCase()] = { word: en, translation: jp, def: `日本語訳: ${jp}` };
+});
+
+function openDictionary(langCode, word){
+  const dict = DICTIONARIES[langCode] || {};
+  const entry = dict[word.toLowerCase()];
+  const modal = document.createElement('div');
+  modal.className='dict-modal';
+  modal.innerHTML = `<div class="dict-box"><h3>${entry ? entry.word : word}</h3><p><b>Traducción:</b> ${entry ? entry.translation : '-'}</p><p>${entry ? entry.def : 'Sin definición.'}</p><div class="dict-actions"><button id="dictTTS">🔊 Pronunciar</button> <button id="dictClose">Cerrar</button></div></div>`;
+  document.body.appendChild(modal);
+  document.getElementById('dictClose').onclick = ()=> modal.remove();
+  document.getElementById('dictTTS').onclick = ()=> speak(entry ? entry.translation : word, langCode);
+}
+
+function speak(text, langCode){
+  if(!window.speechSynthesis) return alert('TTS no soportado en este navegador');
+  const utter = new SpeechSynthesisUtterance(text);
+  // set voice language approx
+  if(langCode==='es') utter.lang='es-ES';
+  else if(langCode==='fr') utter.lang='fr-FR';
+  else if(langCode==='th') utter.lang='th-TH';
+  else if(langCode==='jp') utter.lang='ja-JP';
+  else utter.lang='en-US';
+  window.speechSynthesis.speak(utter);
+}
+
+// Now we need to re-implement handlePracticeAnswer since we replaced earlier
+function handlePracticeAnswer(lang, chosen, correct){
+  const prog = getProgress();
+  prog[lang.code] = prog[lang.code] || { xp:0, streak:0, lastActive:null };
+  const state = prog[lang.code];
+  if(chosen === correct){
+    state.xp += 10;
+    state.streak += 1;
+    mascotReact('happy');
+    appendMessage('ai', `¡Correcto! +10 XP. Racha: ${state.streak}`);
+  } else {
+    state.streak = 0;
+    mascotReact('sad');
+    appendMessage('ai', `Incorrecto. La respuesta correcta era: ${correct}`);
+  }
+  // daily streak handling
+  const today = new Date().toISOString().slice(0,10);
+  if(state.lastActive !== today){
+    // if lastActive is yesterday +1 streak stays, else reset handled above
+    state.lastActive = today;
+  }
+  saveProgress(prog);
+  const xpEl = document.getElementById('lm-xp'); if(xpEl) xpEl.textContent = state.xp;
+  const streakEl = document.getElementById('lm-streak'); if(streakEl) streakEl.textContent = state.streak;
+  const levelEl = document.getElementById('lm-level'); if(levelEl) levelEl.textContent = Math.floor(state.xp/100);
+  setTimeout(()=> renderPractice(lang), 900);
+}
+
