@@ -1,0 +1,34 @@
+{
+  "es": [
+    {
+      "id": "es-basic-1",
+      "title": "Básico 1",
+      "description": "Vocabulario esencial (10 palabras)",
+      "words": ["student","teacher","school","math","chemistry","physics","computer","offline","exercise","answer"]
+    }
+  ],
+  "fr": [
+    {
+      "id": "fr-basic-1",
+      "title": "Basique 1",
+      "description": "Vocabulaire essentiel (10 mots)",
+      "words": ["student","teacher","school","math","chemistry","physics","computer","offline","exercise","answer"]
+    }
+  ],
+  "th": [
+    {
+      "id": "th-basic-1",
+      "title": "พื้นฐาน 1",
+      "description": "คำศัพท์พื้นฐาน (10 คำ)",
+      "words": ["student","teacher","school","math","chemistry","physics","computer","offline","exercise","answer"]
+    }
+  ],
+  "jp": [
+    {
+      "id": "jp-basic-1",
+      "title": "基本 1",
+      "description": "基本単語 (10 語)",
+      "words": ["student","teacher","school","math","chemistry","physics","computer","offline","exercise","answer"]
+    }
+  ]
+}

@@ -111,5 +111,61 @@ app.get('/api/sync/load', (req, res)=>{
   }catch(e){ console.error(e); return res.status(500).json({ error: 'load failed' }); }
 });
 
+// Units / skills endpoint
+app.get('/api/units', (req, res)=>{
+  const lang = (req.query.lang||'es').toLowerCase();
+  try{
+    const unitsFile = path.join(DATA_DIR, 'units.json');
+    if(!fs.existsSync(unitsFile)) return res.json({ units: [] });
+    const units = JSON.parse(fs.readFileSync(unitsFile,'utf8'));
+    return res.json({ units: units[lang] || [] });
+  }catch(e){ console.error(e); return res.status(500).json({ error:'units_load_failed' }); }
+});
+
+// Mark lesson/unit completed (merges into saved progress file if id provided)
+app.post('/api/progress/complete', (req, res)=>{
+  const { id, lang, unitId, lessonId, awardXP } = req.body || {};
+  if(!id) return res.status(400).json({ error:'id required' });
+  const file = path.join(DATA_DIR, `${id}.json`);
+  let content = { progress: {} };
+  if(fs.existsSync(file)){
+    try{ content = JSON.parse(fs.readFileSync(file,'utf8')); }catch(e){ console.error('read fail',e); }
+  }
+  content.progress = content.progress || {};
+  content.progress[lang] = content.progress[lang] || { completedUnits: [], xp:0, streak:0 };
+  const prog = content.progress[lang];
+  prog.completedUnits = prog.completedUnits || [];
+  if(unitId && !prog.completedUnits.includes(unitId)) prog.completedUnits.push(unitId);
+  if(awardXP) prog.xp = (prog.xp||0) + awardXP;
+  prog.lastUpdated = new Date().toISOString();
+  try{ fs.writeFileSync(file, JSON.stringify(content, null, 2)); return res.json({ ok:true, progress: prog }); }
+  catch(e){ console.error(e); return res.status(500).json({ error:'save_failed' }); }
+});
+
+// TTS endpoint: proxy to OpenAI TTS if OPENAI_API_KEY provided. Otherwise 501.
+app.post('/api/tts', async (req, res)=>{
+  const { text, lang='en' } = req.body || {};
+  if(!text) return res.status(400).json({ error:'text required' });
+  const OPENAI_KEY = process.env.OPENAI_API_KEY;
+  if(!OPENAI_KEY){
+    return res.status(501).json({ error:'Server-side TTS not configured. Set OPENAI_API_KEY to enable.' });
+  }
+  try{
+    // Example proxy to OpenAI audio/speech endpoint (model may vary). This returns binary audio data
+    const response = await fetch('https://api.openai.com/v1/audio/speech', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ model: 'gpt-4o-mini-tts', voice: 'alloy', input: text, language: lang })
+    });
+    if(!response.ok){ const t = await response.text(); console.error('tts err', t); return res.status(500).json({ error:'tts_failed' }); }
+    const arrayBuffer = await response.arrayBuffer();
+    res.setHeader('Content-Type','audio/mpeg');
+    return res.send(Buffer.from(arrayBuffer));
+  }catch(err){ console.error('tts proxy error', err); return res.status(500).json({ error:'tts_error' }); }
+});
+
 const port = process.env.PORT || 8080;
 app.listen(port, ()=> console.log(`Server running on http://0.0.0.0:${port} — IA: ${AI_NAME}`));
