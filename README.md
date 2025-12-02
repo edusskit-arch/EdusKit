@@ -60,3 +60,53 @@ Fase 4 — Expansión y escalabilidad (años posteriores podrian tener esta actu
 - Integración con repositorios de contenidos locales.  
 - Posible sincronización opcional en línea para estadísticas y mejoras.  
 Claro cabe destacar que esto me exige colocar la app/pagina en modo online... ¡¡¡Y SI!!! por su puesto tendra servicios online, ya que esta app/pagina tendra actualizaciones ¨constantes¨ por parte de los autores. Ademas de integracion de Inteligencia artificial creada solo para esta aplicación, esto de modo para guiar y ayudar en el proceso de aprendizaje.
+
+---
+
+## Servidor local y asistente IA (EdusBot)
+
+Se ha añadido un servidor Node.js con un asistente IA integrado llamado `EdusBot`.
+
+Cómo ejecutar (desarrollo)
+
+1. Instala dependencias:
+
+```bash
+cd /path/to/EdusKit
+npm install
+```
+
+2. Arranca el servidor:
+
+```bash
+# Ejecuta el servidor (sirve los ficheros y expone /api/ai)
+node server.js
+# o usando npm
+npm start
+```
+
+3. Abre en el navegador:
+
+```
+http://localhost:8080
+```
+
+Uso del asistente (EdusBot)
+
+- En la web encontrarás un panel de chat donde puedes escribir preguntas. Por defecto el servidor responde con mensajes de ejemplo (modo mock).
+- Si quieres usar una IA real (OpenAI), exporta tu clave antes de arrancar:
+
+```bash
+export OPENAI_API_KEY="sk-..."
+node server.js
+```
+
+Notas de seguridad
+
+- No incluyas tu clave en el repositorio. Manténla en variables de entorno.
+- Las peticiones se proxean a OpenAI si `OPENAI_API_KEY` está presente; el servidor no almacena conversaciones.
+
+Integración con VS Code
+
+- Se agregó una tarea de VS Code (`.vscode/tasks.json`) llamada `serve` que ejecuta `node server.js`.
+- Las configuraciones `Launch Chrome` / `Launch Edge` en `.vscode/launch.json` usan esa tarea como `preLaunchTask`, por lo que VS Code arrancará el servidor antes de abrir el navegador para depuración.

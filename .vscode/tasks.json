@@ -4,8 +4,8 @@
     {
       "label": "serve",
       "type": "shell",
-      "command": "npm",
-      "args": ["start"],
+      "command": "node",
+      "args": ["server.js"],
       "isBackground": true,
       "presentation": {
         "reveal": "always",
