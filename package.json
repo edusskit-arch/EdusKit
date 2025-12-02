@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "test": "node tests/ai.test.js"
   },
   "dependencies": {
     "body-parser": "^1.20.2",

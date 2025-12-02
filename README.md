@@ -110,3 +110,8 @@ Integración con VS Code
 
 - Se agregó una tarea de VS Code (`.vscode/tasks.json`) llamada `serve` que ejecuta `node server.js`.
 - Las configuraciones `Launch Chrome` / `Launch Edge` en `.vscode/launch.json` usan esa tarea como `preLaunchTask`, por lo que VS Code arrancará el servidor antes de abrir el navegador para depuración.
+
+Pruebas automáticas y CI
+
+- Se añadió un test sencillo en `tests/ai.test.js` que hace POST a `/api/ai` y verifica que la respuesta contiene un campo `reply`.
+- Se añadió un workflow de GitHub Actions en `.github/workflows/ci.yml` que instala dependencias, arranca el servidor y ejecuta `npm test` en pushes/pull requests a `main`.

@@ -159,6 +159,8 @@ document.getElementById('ai-name').textContent = AI_NAME;
 const chatEl = document.getElementById('chat');
 const chatInput = document.getElementById('chatInput');
 const chatSend = document.getElementById('chatSend');
+const clearBtn = document.getElementById('clearHistory');
+const copyBtn = document.getElementById('copyHistory');
 
 function appendMessage(who, text){
   const m = document.createElement('div');
@@ -166,6 +168,12 @@ function appendMessage(who, text){
   m.innerHTML = `<strong>${who==='user'? 'Tú' : AI_NAME}:</strong> <span>${text}</span>`;
   chatEl.appendChild(m);
   chatEl.scrollTop = chatEl.scrollHeight;
+  // persist
+  try{
+    const hist = JSON.parse(localStorage.getItem('eduskit_chat')||'[]');
+    hist.push({who, text, ts: Date.now()});
+    localStorage.setItem('eduskit_chat', JSON.stringify(hist));
+  }catch(e){ console.warn('storage failed', e); }
 }
 
 async function sendToAI(text){
@@ -199,4 +207,40 @@ chatSend.onclick = () => {
 chatInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') chatSend.click(); });
 
 // Mensaje de bienvenida
+function renderHistory(){
+  chatEl.innerHTML = '';
+  try{
+    const hist = JSON.parse(localStorage.getItem('eduskit_chat')||'[]');
+    hist.forEach(item=>{
+      const who = item.who;
+      const text = item.text;
+      const m = document.createElement('div');
+      m.className = 'chat-msg ' + (who==='user'? 'user' : 'ai');
+      const time = new Date(item.ts).toLocaleTimeString();
+      m.innerHTML = `<strong>${who==='user'? 'Tú' : AI_NAME} (${time}):</strong> <span>${text}</span>`;
+      chatEl.appendChild(m);
+    });
+  }catch(e){ console.warn('read hist', e); }
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
 appendMessage('ai', `Hola — soy ${AI_NAME}. ¿En qué te ayudo hoy?`);
+renderHistory();
+
+// Clear & copy actions
+clearBtn.onclick = ()=>{
+  if(confirm('Borrar todo el historial de conversación?')){
+    localStorage.removeItem('eduskit_chat');
+    renderHistory();
+    appendMessage('ai', `Historial borrado. ¿En qué te ayudo ahora?`);
+  }
+};
+
+copyBtn.onclick = ()=>{
+  try{
+    const hist = JSON.parse(localStorage.getItem('eduskit_chat')||'[]');
+    const text = hist.map(h=>`${h.who==='user'? 'Tú' : AI_NAME}: ${h.text}`).join('\n');
+    navigator.clipboard.writeText(text || '');
+    appendMessage('ai', 'Conversación copiada al portapapeles.');
+  }catch(e){ appendMessage('ai', 'No se pudo copiar.'); console.error(e); }
+};
